@@ -1,0 +1,47 @@
+#!/bin/sh
+# PrivateGit post-receive hook: records who created each branch (its owner, who may later
+# delete it) and forgets the owner when the branch is deleted. Stored in the repository's
+# own config as branch.<name>.privategitowner, so it is part of normal backups.
+user=${PRIVATEGIT_USER:-unknown}
+repo=$(basename "$(pwd)" .git)
+main=$(git symbolic-ref -q HEAD 2>/dev/null || echo refs/heads/main)
+main_changed=0
+setcfg() { # retry briefly if another push holds the config lock
+    i=0; while [ $i -lt 10 ]; do git config "$@" 2>/dev/null && return 0; i=$((i + 1)); sleep 0.2; done; return 1
+}
+while read -r old new ref; do
+    case $ref in refs/heads/*) ;; *) continue ;; esac
+    if [ "$ref" = "$main" ]; then case $new in *[!0]*) main_changed=1 ;; esac; fi
+    branch=${ref#refs/heads/}
+    case $new in
+        *[!0]*) case $old in
+                    *[!0]*) ;;                                         # ordinary update
+                    *) setcfg "branch.$branch.privategitowner" "$user" \
+                           || echo "PrivateGit: warning: could not record $user as owner of $branch." >&2 ;;
+                esac ;;
+        *) setcfg --unset "branch.$branch.privategitowner"
+           echo "PrivateGit: branch $branch deleted by $user (last commit ${old%"${old#????????}"})." >&2
+           logger -t privategit-ssh -p authpriv.info "branch-delete user=$user repo=$repo ref=$ref old=$old" 2>/dev/null || true ;;
+    esac
+done
+# Hidden backup of the main branch (PrivateGit__MainBackup). Local copy: done now, bounded.
+# NAS copy: in the background, so a slow or sleeping NAS never delays the push.
+if [ "$main_changed" = 1 ]; then
+    tools=$(dirname "$0")
+    gitdir=$(git rev-parse --absolute-git-dir)
+    if [ -n "${PRIVATEGIT_BACKUP_DIR:-}" ]; then
+        timeout 120 "$tools/backup-main" "$gitdir" "$PRIVATEGIT_BACKUP_DIR" "$repo" "${main#refs/heads/}" 2>/dev/null \
+            || { echo "PrivateGit: warning: the server backup of ${main#refs/heads/} could not be updated (your push is safe)." >&2
+                 logger -t privategit-ssh -p authpriv.warning "backup-failed repo=$repo" 2>/dev/null || true; }
+    fi
+    if [ -n "${PRIVATEGIT_NAS_DIR:-}" ]; then
+        # Fully detached: this hook returns immediately whatever state the NAS is in. At most
+        # one NAS copy per repository runs at a time (a busy/hung one makes later pushes skip
+        # theirs; the next copy after the NAS recovers brings it up to date). Hard time limit.
+        lock="${PRIVATEGIT_BACKUP_DIR:-/srv/privategit/backups}/.nas-$repo.lock"
+        setsid -f flock -n "$lock" \
+            sh -c 'timeout -k 10 600 "$0" "$@" >/dev/null 2>&1 || logger -t privategit-ssh -p authpriv.warning "nas-backup-failed repo=$3" 2>/dev/null' \
+            "$tools/backup-main" "$gitdir" "$PRIVATEGIT_NAS_DIR" "$repo" "${main#refs/heads/}" </dev/null >/dev/null 2>&1 || true
+    fi
+fi
+exit 0

@@ -1,0 +1,31 @@
+@page "/repositories/{name}"
+@model RepositoryModel
+@{ ViewData["Title"] = Model.Name; }
+<a asp-page="/Index" class="back">← All repositories</a><div class="page-title"><div><h1><span class="muted">▤</span> @Model.Name <span class="badge">Private</span></h1><p class="muted">Files, versions, and the story behind every change.</p></div></div>
+<nav class="repo-tabs" aria-label="Repository"><a class="active" asp-page="/Repository" asp-route-name="@Model.Name">Files &amp; history</a><a asp-page="/Versions" asp-route-name="@Model.Name">Branches &amp; tags</a><a asp-page="/Compare" asp-route-name="@Model.Name">Compare changes</a>@if (User.IsInRole("Admin")) { <a asp-page="/Access" asp-route-name="@Model.Name">Access</a> }</nav>
+<div class="clone-bar"><span class="eyebrow">CLONE WITH SSH</span><code>@Model.CloneUrl</code><span class="badge">@(User.IsInRole("Admin") ? "Admin · read & write" : Model.Access == Permission.Write ? "You can pull and push" : "Read only · you can clone and pull")</span></div>
+@if (Model.Error is not null) { <div class="notice error" role="alert">@Model.Error</div> }
+@if (Model.IsEmpty) { <section class="empty"><h2>Ready for the first commit.</h2><p class="muted">Run these commands on your Linux or Windows client after configuring its SSH key.</p><pre>git clone @Model.CloneUrl
+cd @Model.Name
+git switch -c main
+# Add your project files, then:
+git add .
+git commit -m "Initial commit"
+git push -u origin main</pre><p class="small muted">Existing Git project? Add this URL as a remote and push your branch to main.</p></section> }
+else if (!string.IsNullOrEmpty(Model.Snapshot)) {
+<form method="get" class="branch-picker"><label for="Revision">Version</label><select id="Revision" name="Revision">
+@if (Model.Revision == Model.Snapshot) { <option selected value="@Model.Snapshot">Commit @Model.Snapshot[..8]</option> }
+<optgroup label="Branches">@foreach (var branch in Model.Branches) { <option value="@("branch:" + branch.Name)" selected="@(Model.Revision == "branch:" + branch.Name)">@branch.Name</option> }</optgroup>
+<optgroup label="Tags">@foreach (var tag in Model.Tags) { <option value="@("tag:" + tag.Name)" selected="@(Model.Revision == "tag:" + tag.Name)">@tag.Name</option> }</optgroup>
+</select><button class="secondary">Browse version</button><span class="muted small">Up to 200 branches and 200 commit-targeted tags</span></form>
+<div class="snapshot-bar"><span>Snapshot <a asp-page="/Commit" asp-route-name="@Model.Name" asp-route-id="@Model.Snapshot"><code>@Model.Snapshot[..8]</code></a></span><span class="muted small">File links stay pinned to this commit.</span></div>
+<section class="file-panel"><div class="file-heading"><strong>@Model.Name / @Model.PathName</strong>@if (!string.IsNullOrEmpty(Model.PathName)) { <a asp-page="/Repository" asp-route-name="@Model.Name" asp-route-Revision="@Model.Snapshot" asp-route-PathName="@Model.Parent">↑ Parent directory</a> }</div>
+@if (Model.FileText is not null) { <pre class="source">@Model.FileText</pre> } else { @foreach (var entry in Model.Entries) { <a class="file-row" asp-page="/Repository" asp-route-name="@Model.Name" asp-route-Revision="@Model.Snapshot" asp-route-PathName="@Model.Child(entry.Name)"><span>@(entry.Type == "tree" ? "▣" : "◇") &nbsp; @entry.Name</span><span class="muted small">@(entry.Mode == "120000" ? "symlink (text)" : entry.Type)</span></a> } }
+</section>
+<h2 class="history-title">@(string.IsNullOrEmpty(Model.PathName) ? "Commit history" : "History for " + Model.PathName)</h2>
+<p class="small muted">Commit metadata timestamps include their UTC offset; these are not server push times. Path history uses this exact path and does not follow renames.</p>
+<section class="file-panel">@foreach (var commit in Model.Commits) { <div class="commit-row"><a asp-page="/Commit" asp-route-name="@Model.Name" asp-route-id="@commit.Id"><code>@commit.Id[..8]</code></a><div><a asp-page="/Commit" asp-route-name="@Model.Name" asp-route-id="@commit.Id"><strong>@commit.Subject</strong></a><p class="small muted">@commit.Author · Authored <time datetime="@commit.Date">@commit.Date</time><br>Committed <time datetime="@commit.CommittedDate">@commit.CommittedDate</time></p></div><a class="small history-browse" asp-page="/Repository" asp-route-name="@Model.Name" asp-route-Revision="@commit.Id" asp-route-PathName="@Model.PathName">Browse at commit →</a></div> }
+@if (Model.Commits.Count == 0) { <p class="muted empty-history">No commits on this history page.</p> }
+</section>
+<div class="pagination">@if (Model.PageNumber > 1) { <a class="secondary" asp-page="/Repository" asp-route-name="@Model.Name" asp-route-Revision="@Model.Snapshot" asp-route-PathName="@Model.PathName" asp-route-PageNumber="@(Model.PageNumber - 1)">← Newer</a> }<span class="muted small">Page @Model.PageNumber</span>@if (Model.HasMore && Model.PageNumber < 1000) { <a class="secondary" asp-page="/Repository" asp-route-name="@Model.Name" asp-route-Revision="@Model.Snapshot" asp-route-PathName="@Model.PathName" asp-route-PageNumber="@(Model.PageNumber + 1)">Older →</a> }</div>
+}

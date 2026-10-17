@@ -1,0 +1,29 @@
+# PrivateGit template: copy into the project root as .gitattributes (all project types).
+# Same line endings for Linux and Windows clients; never try to text-merge binaries.
+* text=auto eol=lf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binary: stored as-is, never diffed or merged line by line.
+*.bit binary
+*.bin binary
+*.dcp binary
+*.xsa binary
+*.xclbin binary
+*.pdf binary
+*.png binary
+*.jpg binary
+*.xlsx binary
+*.docx binary
+*.pptx binary
+*.mat binary
+*.slx binary
+*.pcap binary
+*.zip binary
+*.gz binary
+
+# Text, but an automatic merge could silently break the design (generated JSON).
+# Git stops and asks a person to choose a version instead: agree on one owner at a time.
+*.bd -merge
+*.xci -merge
+*.xpr -merge

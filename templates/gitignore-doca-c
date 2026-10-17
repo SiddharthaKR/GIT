@@ -1,0 +1,70 @@
+# PrivateGit template: DOCA / DPDK / C / C++ / CUDA projects (BlueField host and DPU side)
+# Copy into the project root as .gitignore.
+
+# ---- Build directories (meson, CMake, make) ----
+build/
+builddir/
+build-*/
+cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+compile_commands.json
+.cache/
+
+# ---- Compiler outputs ----
+*.o
+*.a
+*.so
+*.so.*
+*.ko
+*.d
+*.out
+*.elf
+
+# ---- CUDA / GPUNetIO ----
+*.ptx
+*.cubin
+*.fatbin
+
+# ---- Runtime artefacts (large, machine-specific) ----
+core
+core.*
+*.pcap
+*.pcapng
+*.log
+perf.data*
+
+# ---- Python / editors / OS ----
+__pycache__/
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+Thumbs.db
+
+# ---- Environments: secrets and local settings (commit only the *.example file) ----
+.env
+.env.*
+*.env
+!.env.example
+!.env.sample
+!.env.template
+!*.env.example
+.envrc
+# ---- Python virtual / conda environments ----
+.venv/
+.venv*/
+venv/
+env/
+ENV/
+.conda/
+conda-env/
+.python-version
+
+# ---- Never commit secrets (keys) ----
+*.pem
+*.key
+id_ed25519*
+id_rsa*

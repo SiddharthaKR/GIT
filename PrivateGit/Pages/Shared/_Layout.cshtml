@@ -1,0 +1,7 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>@ViewData["Title"] · PrivateGit</title><link rel="stylesheet" href="~/site.css" asp-append-version="true"><link rel="stylesheet" href="~/history.css" asp-append-version="true"></head>
+<body>
+<aside class="sidebar"><a class="brand" asp-page="/Index"><span class="brand-icon">⌘</span> PrivateGit</a><span class="workspace-label">YOUR WORKSPACE</span><a class="nav-item" asp-page="/Index">▤ &nbsp; Repositories</a><div class="sidebar-bottom"><span class="status-dot"></span> Self-hosted · Private network<p>Your code. Your infrastructure.</p></div></aside>
+<div class="workspace"><header><span class="muted">Workspace <span class="slash">/</span> <strong>Engineering</strong></span><div class="account">@if (User.Identity?.IsAuthenticated == true) { <span>@User.Identity.Name <span class="badge">@(User.IsInRole("Admin") ? "Admin" : "User")</span></span><form method="post" asp-page="/Logout"><button class="text-button">Sign out</button></form> } else { <span class="badge">PRIVATE ACCESS</span> }</div></header><main>@RenderBody()</main><footer>PrivateGit <span>Git over SSH · No cloud connection required</span></footer></div>
+</body></html>

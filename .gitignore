@@ -1,0 +1,17 @@
+.dotnet/
+.dotnet-home/
+.dotnet-install.ps1
+.venv/
+.deps/
+**/bin/
+**/obj/
+**/App_Data/
+artifacts/
+*.user
+*.zip
+.env
+.env.*
+*.env
+!.env.example
+venv/
+env/

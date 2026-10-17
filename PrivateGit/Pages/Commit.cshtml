@@ -1,0 +1,12 @@
+@page "/repositories/{name}/commits/{id}"
+@model CommitModel
+@{ ViewData["Title"] = "Commit · " + Model.Name; }
+<a asp-page="/Repository" asp-route-name="@Model.Name" class="back">← @Model.Name</a>
+@if (Model.Error is not null) { <div class="notice error" role="alert">@Model.Error</div> }
+@if (Model.Details is not null) {
+<div class="eyebrow">COMMIT DETAILS</div><div class="page-title"><h1 class="commit-title">@Model.Details.Commit.Subject</h1><a class="secondary" asp-page="/Repository" asp-route-name="@Model.Name" asp-route-Revision="@Model.Details.Commit.Id">Browse files at this commit</a></div>
+<section class="commit-metadata"><code>@Model.Details.Commit.Id</code><p>Authored by <strong>@Model.Details.Commit.Author</strong> · <time datetime="@Model.Details.Commit.Date">@Model.Details.Commit.Date</time><br>Committed by <strong>@Model.Details.Commit.Committer</strong> · <time datetime="@Model.Details.Commit.CommittedDate">@Model.Details.Commit.CommittedDate</time></p><pre>@Model.Details.Message</pre></section>
+@if (Model.Details.Parents.Count == 0) { <p class="small muted">Initial commit — compared with an empty repository.</p> }
+else { <div class="parent-links"><span class="small muted">Compare against parent:</span>@foreach (var parent in Model.Details.Parents) { <a class="secondary @(Model.Parent == parent ? "selected-parent" : "")" asp-page="/Commit" asp-route-name="@Model.Name" asp-route-id="@Model.Id" asp-route-Parent="@parent">@parent[..8]</a><a class="small" asp-page="/Commit" asp-route-name="@Model.Name" asp-route-id="@parent">View parent ↗</a> }</div>@if (Model.Details.Parents.Count > 1) { <p class="small muted">Merge commit: the default diff uses the first parent. Select another parent to inspect that comparison.</p> } }
+<partial name="_Changes" model="@(new ChangeView(Model.Name, Model.Parent, Model.Details.Commit.Id, Model.Changes))" />
+}

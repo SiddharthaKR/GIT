@@ -1,0 +1,22 @@
+# /etc/privategit/environment -- root:gitrepos, mode 0640. Written by install.sh.
+# systemd environment syntax; this is not a shell script. Also read by the SSH gate.
+# AllowedHosts is the address people type: a fixed IP (no DNS needed) or a DNS name.
+AllowedHosts=172.20.1.126
+PrivateGit__DataDirectory=/var/lib/privategit
+PrivateGit__RepositoryDirectory=/srv/privategit/repositories
+PrivateGit__AccessFile=/srv/privategit/access/access.json
+PrivateGit__AuthorizedKeysFile=/etc/privategit/authorized_keys
+PrivateGit__CloneBaseUrl=git@172.20.1.126:/srv/privategit/repositories
+PrivateGit__GitExecutable=/usr/bin/git
+PrivateGit__BehindProxy=true
+# Writers may delete branches (never main, never tags). Set false to forbid all deletion.
+PrivateGit__AllowBranchDelete=true
+PrivateGit__HooksDirectory=/opt/privategit/hooks
+# Hidden backup of the main branch after every push (admins restore with admin.sh). false = off.
+PrivateGit__MainBackup=true
+PrivateGit__BackupDirectory=/srv/privategit/backups
+# Optional extra copy on a NAS share mounted on this server (empty = off), for all (*) or
+# listed repositories, e.g. PrivateGit__NasBackupRepositories=fpga-rtl,dpu-demo
+PrivateGit__NasBackupDirectory=
+PrivateGit__NasBackupRepositories=*
+DOTNET_EnableDiagnostics=0

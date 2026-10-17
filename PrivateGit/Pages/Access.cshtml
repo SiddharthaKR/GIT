@@ -1,0 +1,28 @@
+@page "/repositories/{name}/access"
+@model AccessModel
+@{ ViewData["Title"] = "Access · " + Model.Name; }
+<a asp-page="/Repository" asp-route-name="@Model.Name" class="back">← @Model.Name</a>
+<div class="eyebrow">REPOSITORY PERMISSIONS</div><h1>Who can use @Model.Name</h1><p class="muted">Permissions apply to both this dashboard and Git over SSH. Changes take effect immediately.</p>
+<nav class="repo-tabs"><a asp-page="/Repository" asp-route-name="@Model.Name">Files &amp; history</a><a asp-page="/Versions" asp-route-name="@Model.Name">Branches &amp; tags</a><a asp-page="/Compare" asp-route-name="@Model.Name">Compare changes</a><a class="active" asp-page="/Access" asp-route-name="@Model.Name">Access</a></nav>
+@if (Model.Created) { <div class="notice success" role="status">Repository created. Only administrators can see it until you grant access below. Clone URL: <code>@Model.CloneUrl</code></div> }
+@if (Model.Saved) { <div class="notice success" role="status">Permissions saved.</div> }
+@if (Model.Error is not null) { <div class="notice error" role="alert">@Model.Error</div> }
+<section class="file-panel">
+<div class="file-heading"><strong>Users</strong><span class="muted small">No access · Read (clone, pull, browse) · Read &amp; write (also push)</span></div>
+@if (Model.People.Count == 0) { <p class="empty-history muted">No user accounts yet. Create one on the server: <code>sudo bash /opt/privategit/admin.sh user-add NAME User</code></p> }
+else {
+<form method="post">
+@foreach (var person in Model.People) {
+    var current = Model.Current[person.Name];
+    <div class="access-row"><label for="@("grant-" + person.Name)"><strong>@person.Name</strong></label>
+    <select id="@("grant-" + person.Name)" name="Grants[@person.Name]">
+        <option value="none" selected="@(current == Permission.None)">No access</option>
+        <option value="read" selected="@(current == Permission.Read)">Read</option>
+        <option value="write" selected="@(current == Permission.Write)">Read &amp; write</option>
+    </select></div>
+}
+<div class="access-actions"><button class="primary">Save permissions</button></div>
+</form>
+}
+</section>
+<p class="small muted">Administrators always have full access: @(Model.Admins.Count == 0 ? "—" : string.Join(", ", Model.Admins)). SSH keys are linked to users on the server with <code>add-client.sh USER key.pub</code>.</p>

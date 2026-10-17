@@ -1,0 +1,37 @@
+[Unit]
+Description=PrivateGit repository dashboard
+After=network.target
+
+[Service]
+Type=simple
+User=gitdash
+Group=gitrepos
+WorkingDirectory=/opt/privategit
+ExecStart=/opt/privategit/PrivateGit
+EnvironmentFile=/etc/privategit/environment
+Environment=ASPNETCORE_ENVIRONMENT=Production
+Restart=on-failure
+RestartSec=5
+UMask=0007
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/privategit /srv/privategit/repositories /srv/privategit/access
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+RestrictRealtime=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+CapabilityBoundingSet=
+AmbientCapabilities=
+LimitNOFILE=1024
+TasksMax=96
+MemoryMax=768M
+TimeoutStopSec=20
+
+[Install]
+WantedBy=multi-user.target

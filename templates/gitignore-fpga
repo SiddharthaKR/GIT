@@ -1,0 +1,114 @@
+# PrivateGit template: FPGA projects (Vivado / Vitis / Vitis HLS / PetaLinux / simulators)
+# Copy into the project root as .gitignore.  Rule: commit SOURCES + Tcl scripts, never
+# generated outputs (they are rebuilt, they are huge, and they cannot be merged).
+
+# ---- Vivado (project mode) outputs ----
+*.cache/
+*.gen/
+*.hw/
+*.ip_user_files/
+*.runs/
+*.sim/
+.Xil/
+*.jou
+*.log
+*.str
+*.backup.*
+webtalk*
+usage_statistics_webtalk.*
+# Uncomment if you recreate the project from Tcl (recommended: write_project_tcl / write_bd_tcl):
+# *.xpr
+
+# ---- Build products (rebuild them; publish release bitstreams outside Git) ----
+*.bit
+*.bin
+*.mcs
+*.prm
+*.dcp
+*.ltx
+*.xsa
+*.xclbin
+*.xo
+*.rpt
+
+# ---- Vitis (classic and unified IDE) ----
+.metadata/
+_ide/
+.analytics
+RemoteSystemsTempFiles/
+**/Debug/
+**/Release/
+**/build/
+**/logs/
+
+# ---- Vitis HLS ----
+**/solution*/.autopilot/
+**/solution*/csim/
+**/solution*/sim/
+**/solution*/syn/
+**/solution*/impl/
+**/solution*/.debug/
+vitis_hls.log
+.apc/
+
+# ---- PetaLinux (keep project-spec/, ignore everything Yocto builds) ----
+/build/
+/images/
+/components/yocto/
+/components/plnx_workspace/
+/.petalinux/*
+!/.petalinux/metadata
+
+# ---- Simulation (xsim, Questa/ModelSim, Verilator, cocotb, waveforms) ----
+xsim.dir/
+*.wdb
+*.pb
+work/
+transcript
+*.wlf
+obj_dir/
+sim_build/
+results.xml
+*.vcd
+*.fst
+*.ghw
+
+# ---- MATLAB / Simulink ----
+*.asv
+*.slxc
+slprj/
+codegen/
+
+# ---- Python / editors / OS ----
+__pycache__/
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+Thumbs.db
+
+# ---- Environments: secrets and local settings (commit only the *.example file) ----
+.env
+.env.*
+*.env
+!.env.example
+!.env.sample
+!.env.template
+!*.env.example
+.envrc
+# ---- Python virtual / conda environments ----
+.venv/
+.venv*/
+venv/
+env/
+ENV/
+.conda/
+conda-env/
+.python-version
+
+# ---- Never commit secrets (keys) ----
+*.pem
+*.key
+id_ed25519*
+id_rsa*

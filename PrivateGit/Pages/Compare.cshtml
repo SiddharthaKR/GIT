@@ -1,0 +1,11 @@
+@page "/repositories/{name}/compare"
+@model CompareModel
+@{ ViewData["Title"] = "Compare · " + Model.Name; }
+<a asp-page="/Repository" asp-route-name="@Model.Name" class="back">← @Model.Name</a>
+<div class="eyebrow">COMPARE SNAPSHOTS</div><h1>What changed?</h1><p class="muted">Compare two branches, tags, or full commit IDs.</p>
+<nav class="repo-tabs"><a asp-page="/Repository" asp-route-name="@Model.Name">Files &amp; history</a><a asp-page="/Versions" asp-route-name="@Model.Name">Branches &amp; tags</a><a class="active" asp-page="/Compare" asp-route-name="@Model.Name">Compare changes</a>@if (User.IsInRole("Admin")) { <a asp-page="/Access" asp-route-name="@Model.Name">Access</a> }</nav>
+<form method="get" class="compare-form"><div><label asp-for="Before">Before</label><input asp-for="Before" list="revision-choices" placeholder="branch:main" required maxlength="1100"></div><span class="compare-arrow">→</span><div><label asp-for="After">After</label><input asp-for="After" list="revision-choices" placeholder="tag:v1.1.0 or full commit ID" required maxlength="1100"></div><button class="primary">Compare changes</button></form>
+<datalist id="revision-choices">@foreach (var branch in Model.Branches) { <option value="@("branch:" + branch.Name)"></option> }@foreach (var tag in Model.Tags) { <option value="@("tag:" + tag.Name)"></option> }</datalist>
+<p class="small muted">Use branch:name, tag:name, or a full commit hash. This compares the two snapshots directly, rather than their common ancestor. Renames appear as a deletion and an addition.</p>
+@if (Model.Error is not null) { <div class="notice error" role="alert">@Model.Error</div> }
+@if (Model.Comparison is not null) { <div class="snapshot-bar"><code>@Model.Comparison.Before → @Model.Comparison.After</code></div><partial name="_Changes" model="Model.Comparison" /> }

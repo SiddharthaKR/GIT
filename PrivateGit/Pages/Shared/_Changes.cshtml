@@ -1,0 +1,21 @@
+@model ChangeView
+<div class="change-summary"><h2>@Model.Changes.TotalFiles changed file@(Model.Changes.TotalFiles == 1 ? "" : "s")</h2>@if (Model.Changes.TotalFiles <= 200) { <span class="added-total">+@Model.Changes.Files.Sum(f => (long)(f.Added ?? 0))</span><span class="removed-total">−@Model.Changes.Files.Sum(f => (long)(f.Removed ?? 0))</span><span class="small muted">text lines in listed files</span> }</div>
+@if (Model.Changes.Warning is not null) { <div class="notice warning" role="status">@Model.Changes.Warning</div> }
+@if (Model.Changes.TotalFiles == 0) { <section class="empty"><h2>No file changes.</h2><p class="muted">The selected snapshots have identical file trees.</p></section> }
+@for (var index = 0; index < Model.Changes.Files.Count; index++) {
+    var file = Model.Changes.Files[index];
+    <section class="diff-file" id="@("change-" + index)">
+        <div class="diff-file-heading"><div><span class="change-status">@(file.Status switch { "A" => "Added", "D" => "Deleted", "T" => "Type changed", _ => "Modified" })</span><strong>@file.Path</strong></div><div class="diff-file-actions">
+        @if (file.Added is not null) { <span class="added-total">+@file.Added</span><span class="removed-total">−@file.Removed</span> } else { <span class="small muted">binary / no line statistics</span> }
+        @if (Model.Before is not null && file.Status != "A") { <a asp-page="/Repository" asp-route-name="@Model.Repository" asp-route-Revision="@Model.Before" asp-route-PathName="@file.Path">Before</a> }
+        @if (file.Status != "D") { <a asp-page="/Repository" asp-route-name="@Model.Repository" asp-route-Revision="@Model.After" asp-route-PathName="@file.Path">After</a> }
+        </div></div>
+        @if (file.OldMode != file.NewMode) { <div class="mode-change">File mode @file.OldMode → @file.NewMode</div> }
+        @if (file.Lines.Count > 0) {
+        <div class="diff-scroll" tabindex="0" role="region" aria-label="@("Changes to " + file.Path)"><table class="diff-table"><caption class="visually-hidden">Old line, new line, and unified code changes. Plus means added; minus means removed.</caption><tbody>
+        @foreach (var line in file.Lines) { <tr class="@line.Kind"><td class="line-number">@line.OldLine</td><td class="line-number">@line.NewLine</td><td class="diff-code"><code>@line.Text</code></td></tr> }
+        </tbody></table></div>
+        } else { <p class="small muted diff-empty">No inline patch available. Use the file links or a local Git client.</p> }
+        @if (file.Truncated) { <div class="notice warning">This file’s preview is truncated at 256 KiB / 5,000 lines. Line totals describe the full file change.</div> }
+    </section>
+}

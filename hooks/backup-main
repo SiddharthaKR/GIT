@@ -1,0 +1,29 @@
+#!/bin/sh
+# PrivateGit: copy a repository's main branch into a hidden backup repository and record a
+# timestamped snapshot ref (refs/snapshots/<UTC time>-<commit>) whenever main changed.
+#   backup-main SOURCE_GIT_DIR BACKUP_ROOT REPOSITORY_NAME [BRANCH]
+# Used by the post-receive hook (local backup + optional NAS copy) and by admin.sh.
+# Backups live outside the served repository folder: users can neither see nor reach them.
+set -u
+src=$1 root=$2 name=$3 branch=${4:-main}
+dest="$root/$name.git"
+umask 0007
+unset GIT_DIR GIT_OBJECT_DIRECTORY GIT_ALTERNATE_OBJECT_DIRECTORIES GIT_QUARANTINE_PATH GIT_INDEX_FILE GIT_WORK_TREE
+g() { git -c safe.directory='*' -c core.hooksPath=/dev/null "$@"; }
+[ -d "$root" ] || { echo "backup folder $root is not available" >&2; exit 1; }
+if [ ! -d "$dest" ]; then
+    # Shared group permissions on Linux disks; plain init where the filesystem (e.g. a NAS
+    # share) cannot store them.
+    g init -q --bare --shared=group "$dest" 2>/dev/null || g init -q --bare "$dest" || exit 1
+    g --git-dir="$dest" symbolic-ref HEAD "refs/heads/$branch"
+fi
+# Local fetches start upload-pack without our -c options, so trust the source there too
+# (repositories are owned by another service account).
+g --git-dir="$dest" fetch -q --no-tags --upload-pack="git -c safe.directory='*' upload-pack" \
+    "$src" "+refs/heads/$branch:refs/heads/$branch" || exit 1
+tip=$(g --git-dir="$dest" rev-parse --verify -q "refs/heads/$branch") || exit 1
+last=$(g --git-dir="$dest" for-each-ref --count=1 --sort=-refname --format='%(objectname)' refs/snapshots/)
+if [ "$tip" != "$last" ]; then
+    g --git-dir="$dest" update-ref "refs/snapshots/$(date -u +%Y%m%dT%H%M%SZ)-$(printf %.8s "$tip")" "$tip" || exit 1
+fi
+exit 0
