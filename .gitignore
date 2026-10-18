@@ -6,7 +6,7 @@
 **/bin/
 **/obj/
 **/App_Data/
-artifacts/
+artifacts/*
 *.user
 *.zip
 .env
@@ -15,3 +15,5 @@ artifacts/
 !.env.example
 venv/
 env/
+# Built server package: committed so .126 can get it with git pull (no NuGet needed there).
+!artifacts/privategit-linux-x64.zip
