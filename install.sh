@@ -236,7 +236,7 @@ if [[ -d $PACKAGE/templates ]]; then install -d -o root -g root -m 0755 /opt/pri
 # remain readable by the unprivileged gitdash service and helper users.
 find /opt/privategit/wwwroot /opt/privategit/deploy /opt/privategit/templates -type d -exec chmod 0755 {} + 2>/dev/null || true
 find /opt/privategit/wwwroot /opt/privategit/deploy /opt/privategit/templates -type f -exec chmod 0644 {} + 2>/dev/null || true
-for asset in install.sh add-client.sh admin.sh request-certificate.sh uninstall-disable.sh uninstall-remove.sh README.md SECURITY.md TESTING.md EASY-SETUP.md OFFICE-SETUP.md ARCHITECTURE.md WINDOWS-CLIENT.md PrivateGit.staticwebassets.endpoints.json; do
+for asset in install.sh add-client.sh admin.sh request-certificate.sh uninstall-disable.sh uninstall-remove.sh client-setup.sh README.md SECURITY.md TESTING.md EASY-SETUP.md OFFICE-SETUP.md ARCHITECTURE.md WINDOWS-CLIENT.md PrivateGit.staticwebassets.endpoints.json; do
     [[ ! -f $PACKAGE/$asset ]] || install -o root -g root -m 0644 "$PACKAGE/$asset" "/opt/privategit/$asset"
 done
 if [[ $TLS_MODE == 1 ]]; then install -m 0644 /etc/privategit/ca/ca.pem /opt/privategit/privategit-ca.crt; fi

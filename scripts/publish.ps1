@@ -11,7 +11,7 @@ if ($LASTEXITCODE -ne 0) { throw 'Publish failed.' }
 New-Item -ItemType Directory -Path "$outputPath/deploy" -Force | Out-Null
 Copy-Item "$taskRoot/deploy/*" "$outputPath/deploy" -Recurse -Force
 Copy-Item "$taskRoot/README.md","$taskRoot/SECURITY.md","$taskRoot/TESTING.md","$taskRoot/EASY-SETUP.md","$taskRoot/OFFICE-SETUP.md","$taskRoot/ARCHITECTURE.md" $outputPath -Force
-Copy-Item "$taskRoot/install.sh","$taskRoot/add-client.sh","$taskRoot/admin.sh","$taskRoot/request-certificate.sh","$taskRoot/uninstall-disable.sh","$taskRoot/uninstall-remove.sh" $outputPath -Force
+Copy-Item "$taskRoot/install.sh","$taskRoot/add-client.sh","$taskRoot/admin.sh","$taskRoot/request-certificate.sh","$taskRoot/uninstall-disable.sh","$taskRoot/uninstall-remove.sh","$taskRoot/client-setup.sh" $outputPath -Force
 # Optional on-server self-test of the SSH permission gate (sudo bash scripts/test-ssh-gate.sh ./PrivateGit).
 New-Item -ItemType Directory -Path "$outputPath/scripts" -Force | Out-Null
 Copy-Item "$taskRoot/scripts/test-ssh-gate.sh" "$outputPath/scripts" -Force

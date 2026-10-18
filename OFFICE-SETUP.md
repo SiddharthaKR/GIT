@@ -116,7 +116,18 @@ Example permission plan:
 
 ## 6. Each person: SSH key and clone (Linux)
 
-Run this as **your own Linux user** on each machine you use:
+**Quickest: the setup script** (no sudo; run as the person, on each machine they use, e.g. .157):
+
+```bash
+cp /opt/privategit/client-setup.sh /tmp/            # on .126; from another server the admin copies it:
+# scp /opt/privategit/client-setup.sh USER@172.20.1.157:/tmp/
+bash /tmp/client-setup.sh 172.20.1.126              # makes the key + SSH settings, prints the admin's commands
+bash /tmp/client-setup.sh 172.20.1.126 --test       # after the admin ran them: "OK: the server knows you as NAME"
+```
+
+The script's SSH settings apply only to `git@172.20.1.126`, so the person's normal `ssh` logins are unchanged. Use `--name NAME` if their PrivateGit name differs from their Linux name.
+
+**Or by hand.** Run this as **your own Linux user** on each machine you use:
 
 ```bash
 ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519_privategit -C "$USER@$(hostname)"
