@@ -11,6 +11,8 @@ PrivateGit__GitExecutable=/usr/bin/git
 PrivateGit__BehindProxy=true
 # Writers may delete branches (never main, never tags). Set false to forbid all deletion.
 PrivateGit__AllowBranchDelete=true
+# Sign-in: false = username + password; true = also a six-digit authenticator code.
+PrivateGit__RequireAuthenticator=false
 PrivateGit__HooksDirectory=/opt/privategit/hooks
 # Hidden backup of the main branch after every push (admins restore with admin.sh). false = off.
 PrivateGit__MainBackup=true

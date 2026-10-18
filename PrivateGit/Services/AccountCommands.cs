@@ -27,7 +27,9 @@ public static class AccountCommands
             throw new InvalidOperationException("Account already exists (add) or does not exist (reset).");
         await access.EnsureAdmins((await store.List()).Where(a => a.IsAdmin).Select(a => a.Name));
         var account = (await store.Find(args[1]))!;
-        Console.WriteLine("Enroll in an offline-capable authenticator: SHA1 / 6 digits / 30 seconds.");
+        Console.WriteLine(store.RequireAuthenticator
+            ? "Enroll in an offline-capable authenticator: SHA1 / 6 digits / 30 seconds."
+            : "Authenticator codes are OFF (PrivateGit__RequireAuthenticator=false): sign in with username + password. Keep the secret below only if you may turn codes on later.");
         Console.WriteLine($"Secret (sensitive; shown only for enrollment): {account.TotpSecret}");
         Console.WriteLine($"otpauth://totp/PrivateGit:{Uri.EscapeDataString(account.Name)}?secret={account.TotpSecret}&issuer=PrivateGit&digits=6&period=30");
         Console.WriteLine("Reset rotates password + TOTP and revokes existing sessions. Do not save this output in logs.");

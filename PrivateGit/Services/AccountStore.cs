@@ -39,8 +39,11 @@ public sealed class AccountStore : IDisposable
     }
     private readonly string file;
     private readonly FileStream processLock;
-    public AccountStore(string directory)
+    // false (default): sign-in with username + password. true: a six-digit authenticator code is also required.
+    public bool RequireAuthenticator { get; }
+    public AccountStore(string directory, bool requireAuthenticator = false)
     {
+        RequireAuthenticator = requireAuthenticator;
         Directory.CreateDirectory(directory);
         file = Path.Combine(directory, "accounts.json");
         processLock = new FileStream(Path.Combine(directory, "accounts.lock"), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
@@ -104,7 +107,7 @@ public sealed class AccountStore : IDisposable
             var account = all[index];
             if (account.LockedUntil > DateTimeOffset.UtcNow) return null;
             var passwordOk = hasher.VerifyHashedPassword(name, account.Hash, password) != PasswordVerificationResult.Failed;
-            var step = Totp.Verify(account.TotpSecret, code, DateTimeOffset.UtcNow, account.LastTotpStep);
+            var step = RequireAuthenticator ? Totp.Verify(account.TotpSecret, code, DateTimeOffset.UtcNow, account.LastTotpStep) : account.LastTotpStep;
             if (!passwordOk || step is null)
             {
                 var failures = account.LockedUntil is not null ? 1 : account.Failures + 1;

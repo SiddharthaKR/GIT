@@ -5,5 +5,5 @@
 @if (Model.Error is not null) { <div class="notice error" role="alert">@Model.Error</div> }
 <form method="post"><label asp-for="Username">Username</label><input asp-for="Username" autocomplete="username" autofocus>
 <label asp-for="Password">Password</label><input type="password" name="Password" id="Password" autocomplete="current-password" required maxlength="128">
-<label asp-for="Code">Authenticator code</label><input name="Code" id="Code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" required placeholder="000000">
-<button class="primary full">Sign in securely <span>→</span></button></form><p class="small muted">Accounts are provisioned by your server administrator. An authenticator code is required for every sign-in.</p></section>
+@if (Model.RequireCode) { <label asp-for="Code">Authenticator code</label><input name="Code" id="Code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" required placeholder="000000"> }
+<button class="primary full">Sign in securely <span>→</span></button></form><p class="small muted">Accounts are provisioned by your server administrator.@(Model.RequireCode ? " An authenticator code is required for every sign-in." : "")</p></section>

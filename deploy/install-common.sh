@@ -61,6 +61,7 @@ PrivateGit__CloneBaseUrl=git@$host:/srv/privategit/repositories
 PrivateGit__GitExecutable=/usr/bin/git
 PrivateGit__BehindProxy=true
 PrivateGit__AllowBranchDelete=true
+PrivateGit__RequireAuthenticator=false
 PrivateGit__HooksDirectory=/opt/privategit/hooks
 PrivateGit__MainBackup=true
 PrivateGit__BackupDirectory=/srv/privategit/backups
@@ -70,7 +71,7 @@ DOTNET_EnableDiagnostics=0
 EOF
 }
 # Keep administrator choices when the installer re-renders the environment on upgrade.
-PG_PRESERVED_SETTINGS="PrivateGit__AllowBranchDelete PrivateGit__MainBackup PrivateGit__BackupDirectory PrivateGit__NasBackupDirectory PrivateGit__NasBackupRepositories"
+PG_PRESERVED_SETTINGS="PrivateGit__AllowBranchDelete PrivateGit__RequireAuthenticator PrivateGit__MainBackup PrivateGit__BackupDirectory PrivateGit__NasBackupDirectory PrivateGit__NasBackupRepositories"
 pg_preserve_settings() {
     local new=$1 old=$2
     [[ -f $old ]] || { cat -- "$new"; return 0; }

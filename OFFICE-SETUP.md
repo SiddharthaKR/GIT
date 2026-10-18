@@ -6,7 +6,7 @@ This guide covers our lab network: Ubuntu 22.04 servers at 172.20.1.x (.126, .15
 
 | Item | How it works |
 |---|---|
-| One web dashboard | `https://172.20.1.126` (the server's IP; no DNS needed). Sign in with a password and a 6-digit authenticator code. |
+| One web dashboard | `https://172.20.1.126` (the server's IP; no DNS needed). Sign in with username + password (a 6-digit authenticator code can be required; see below). |
 | Git over SSH | `git clone git@172.20.1.126:project.git` from any approved machine. |
 | Per-user, per-repository permissions | For each repository, each user has **No access**, **Read** (clone, pull, browse) or **Read & write** (also push). The same rule applies on the web and over SSH. |
 | Admins | Create repositories and manage permissions. They always have full access. |
@@ -64,7 +64,11 @@ Answers for our network:
 | HTTPS certificate | `1` = private PrivateGit CA (no IT needed) |
 | First administrator | your username, e.g. `siddhartha` |
 
-You then set a 16+ character password and add the displayed secret to an authenticator app (Microsoft Authenticator, Google Authenticator, 2FAS, KeePassXC…). Type the secret by hand; no QR service is used.
+You then set a 16+ character password. Sign-in uses **username + password** by default.
+
+Optional authenticator codes: to also require a 6-digit code at every sign-in, run
+`sudo sed -i 's/^PrivateGit__RequireAuthenticator=.*/PrivateGit__RequireAuthenticator=true/' /etc/privategit/environment && sudo systemctl restart privategit`.
+Each person then adds their account secret to an authenticator app (Microsoft/Google Authenticator, 2FAS, KeePassXC…). The secret is printed by `user-add`/`user-reset`; type it by hand, no QR service is used. Set `false` and restart to turn codes off again.
 
 ## 4. Trust the private CA and bypass the proxy (each client, once)
 

@@ -36,7 +36,7 @@ if (args.Length > 0 && (AccessCommands.Names.Contains(args[0]) || args[0] == "us
     catch (ArgumentException exception) { Console.Error.WriteLine(exception.Message); Environment.ExitCode = 2; }
     return;
 }
-builder.Services.AddSingleton(new AccountStore(data));
+builder.Services.AddSingleton(new AccountStore(data, config.GetValue("RequireAuthenticator", false)));
 builder.Services.AddSingleton(access);
 builder.Services.AddSingleton<GitStore>();
 builder.Services.AddDataProtection().PersistKeysToFileSystem(new DirectoryInfo(Path.Combine(data, "keys")))

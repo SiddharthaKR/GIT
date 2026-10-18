@@ -17,7 +17,7 @@ This is an initial internal-team application, not a security certification or a 
 
 - ASP.NET Core cookie authentication; HTTP-only, SameSite Strict cookies, Secure in production; fixed four-hour sessions. Account stamp validation revokes sessions after reset/deletion.
 - ASP.NET Core Identity password hashing with 600,000 PBKDF2 iterations; 16-character password minimum. No default accounts or public signup.
-- Mandatory RFC 6238 TOTP; previous/current/next 30-second window; accepted steps stored to prevent replay. Five failed attempts lock an existing account for 15 minutes. Generic login errors; app and Nginx login rate limits.
+- Optional RFC 6238 TOTP (`PrivateGit__RequireAuthenticator`, default `false` = username + password only; set `true` and restart the service to require a code for every sign-in). When on: previous/current/next 30-second window; accepted steps stored to prevent replay. Five failed attempts lock an existing account for 15 minutes. Generic login errors; app and Nginx login rate limits.
 - Razor antiforgery tokens on POST forms, server-side authorization, no GET mutations, and Razor HTML encoding for all repository content. Source is always text; no Markdown/HTML execution or external assets.
 - CSP disallows scripts, framing and third-party resources; no-store responses; production HTTPS enforcement, HSTS, exact allowed hostname, loopback Kestrel, explicitly enabled loopback proxy trust.
 - No shell invocation for Git. ArgumentList, strict repository names, hash-only object operations, no revision strings supplied to Git, symlink repository root rejection, bounded output and file previews, 12-second command deadlines, four concurrent Git processes, disabled hooks for dashboard Git commands.

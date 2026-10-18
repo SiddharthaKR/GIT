@@ -13,17 +13,19 @@ public class LoginModel(AccountStore accounts, ILogger<LoginModel> logger) : Pag
 {
     [BindProperty, Required, StringLength(32)] public string Username { get; set; } = "";
     [BindProperty, Required, StringLength(128)] public string Password { get; set; } = "";
-    [BindProperty, Required, RegularExpression("^[0-9]{6}$")] public string Code { get; set; } = "";
+    [BindProperty, RegularExpression("^[0-9]{6}$")] public string? Code { get; set; }
+    public bool RequireCode => accounts.RequireAuthenticator;
     public string? Error { get; set; }
     public IActionResult OnGet() => User.Identity?.IsAuthenticated == true ? RedirectToPage("/Index") : Page();
     public async Task<IActionResult> OnPostAsync()
     {
-        if (!ModelState.IsValid) { Error = "Enter your username, password, and six-digit authenticator code."; return Page(); }
-        var account = await accounts.Authenticate(Username, Password, Code);
+        if (!ModelState.IsValid || (RequireCode && string.IsNullOrEmpty(Code)))
+        { Error = RequireCode ? "Enter your username, password, and six-digit authenticator code." : "Enter your username and password."; return Page(); }
+        var account = await accounts.Authenticate(Username, Password, Code ?? "");
         if (account is null)
         {
             logger.LogWarning("Login denied from {Address}", HttpContext.Connection.RemoteIpAddress);
-            Error = "Sign-in failed. Check your credentials or try later. Codes cannot be reused.";
+            Error = RequireCode ? "Sign-in failed. Check your credentials or try later. Codes cannot be reused." : "Sign-in failed. Check your username and password, or try again later.";
             ModelState.Remove(nameof(Password)); ModelState.Remove(nameof(Code)); Password = ""; Code = "";
             return Page();
         }

@@ -41,7 +41,7 @@ try
     var now = DateTimeOffset.UtcNow;
     Check(Totp.Verify(rfcSecret, Totp.Code(rfcSecret, now.ToUnixTimeSeconds() / 30), now, now.ToUnixTimeSeconds() / 30) is null, "Reject replayed TOTP");
     Check(Totp.Verify(rfcSecret, "bad", now, -1) is null, "Reject malformed TOTP");
-    using (var accounts = new AccountStore(data))
+    using (var accounts = new AccountStore(data, requireAuthenticator: true))
     {
         Check(await accounts.Put("admin", password, "Admin", false), "Create admin with hashed password");
         Check(await accounts.Put("reader", password, "Reader", false), "Create reader");
@@ -54,6 +54,7 @@ try
         Check((await accounts.Find("locked"))!.LockedUntil > DateTimeOffset.UtcNow, "Persistent account lockout after five failures");
         Check(await accounts.Authenticate("locked", password, Totp.Code(locked.TotpSecret, DateTimeOffset.UtcNow.ToUnixTimeSeconds() / 30)) is null, "Correct credentials cannot bypass lockout");
         Check(!(await File.ReadAllTextAsync(Path.Combine(data, "accounts.json"))).Contains(password), "No plaintext password in account storage");
+        Check(await accounts.Authenticate("admin", password, "") is null, "Authenticator on: password alone is refused");
         var oldStamp = (await accounts.Find("locked"))!.Stamp;
         await accounts.Put("locked", password, "Reader", true);
         Check((await accounts.Find("locked"))!.Stamp != oldStamp, "Account reset rotates session stamp");
@@ -220,6 +221,15 @@ try
     Check(await Who("publickey ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDupKey") is null && await Who("publickey ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAITwoKey") is null, "Gate refuses ambiguous key ownership");
     Check(await Who("publickey ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAlice") is null && await Who("publickey ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIUnknown") is null, "Gate refuses unknown or prefix-matching keys");
     Check(await Who("publickey ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAliceKey\npublickey ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBobKey") is null && GitServe.IdentifyUser(null, keyPath) is null, "Gate refuses missing or multi-key authentication info");
+    using (var passwordOnly = new AccountStore(Path.Combine(temporary, "password-only")))
+    {
+        Check(!passwordOnly.RequireAuthenticator, "Authenticator codes are off by default");
+        await passwordOnly.Put("plain", password, "User", false);
+        Check(await passwordOnly.Authenticate("plain", password, "") is not null, "Authenticator off: username + password signs in");
+        Check(await passwordOnly.Authenticate("plain", "incorrect-password-xyz", "") is null, "Authenticator off: wrong password is refused");
+        for (var i = 0; i < 5; i++) await passwordOnly.Authenticate("plain", "incorrect-password-xyz", "");
+        Check(await passwordOnly.Authenticate("plain", password, "") is null, "Authenticator off: lockout still applies");
+    }
     var listener = new TcpListener(IPAddress.Loopback, 0); listener.Start(); var port = ((IPEndPoint)listener.LocalEndpoint).Port; listener.Stop();
     var start = new ProcessStartInfo(dotnet) { WorkingDirectory = source, RedirectStandardOutput = true, RedirectStandardError = true };
     start.ArgumentList.Add(assembly);
@@ -227,6 +237,7 @@ try
     start.Environment["ASPNETCORE_URLS"] = $"http://127.0.0.1:{port}";
     start.Environment["PrivateGit__DataDirectory"] = data;
     start.Environment["PrivateGit__RepositoryDirectory"] = repositories;
+    start.Environment["PrivateGit__RequireAuthenticator"] = "true";
     server = Process.Start(start)!;
     var serverLog = server.StandardOutput.ReadToEndAsync(); var serverError = server.StandardError.ReadToEndAsync();
     HttpClient NewClient() => new(new HttpClientHandler { AllowAutoRedirect = false, CookieContainer = new CookieContainer() }) { BaseAddress = new Uri($"http://127.0.0.1:{port}"), Timeout = TimeSpan.FromSeconds(20) };
