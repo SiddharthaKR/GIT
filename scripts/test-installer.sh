@@ -8,7 +8,7 @@ source "$ROOT/deploy/install-common.sh"
 passed=0
 check() { "$@"; passed=$((passed + 1)); printf 'PASS %s\n' "$*"; }
 reject() { if "$@"; then printf 'FAIL: accepted invalid input: %s\n' "$*" >&2; exit 1; fi; passed=$((passed + 1)); printf 'PASS rejected %s\n' "$*"; }
-for script in install.sh add-client.sh admin.sh request-certificate.sh deploy/install-common.sh scripts/test-installer.sh scripts/test-ssh-gate.sh; do check bash -n "$ROOT/$script"; done
+for script in install.sh add-client.sh admin.sh request-certificate.sh uninstall-disable.sh uninstall-remove.sh deploy/install-common.sh scripts/test-installer.sh scripts/test-ssh-gate.sh; do check bash -n "$ROOT/$script"; done
 check pg_hostname git.internal
 check pg_hostname code.development.company.internal
 check pg_hostname git-01.company.internal

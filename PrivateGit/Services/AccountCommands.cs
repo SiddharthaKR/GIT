@@ -22,10 +22,7 @@ public static class AccountCommands
         }
         if (args.Length != 3) throw new ArgumentException("Specify Admin or User.");
         var role = AccountStore.NormalizeRole(args[2]);
-        Console.Write("New password (16+ characters): ");
-        var password = ReadPassword();
-        Console.Write("Repeat password: ");
-        if (password != ReadPassword()) throw new ArgumentException("Passwords differ.");
+        var password = PromptPassword();
         if (!await store.Put(args[1], password, role, args[0] == "user-reset"))
             throw new InvalidOperationException("Account already exists (add) or does not exist (reset).");
         await access.EnsureAdmins((await store.List()).Where(a => a.IsAdmin).Select(a => a.Name));
@@ -36,6 +33,26 @@ public static class AccountCommands
         Console.WriteLine("Reset rotates password + TOTP and revokes existing sessions. Do not save this output in logs.");
         if (role == "User")
             Console.WriteLine($"This user sees no repositories until granted: PrivateGit access-grant REPO {account.Name} read|write (or use the dashboard Access tab).");
+    }
+    // Up to three attempts, so a short or mistyped password does not abort the installer.
+    private static string PromptPassword()
+    {
+        for (var attempt = 1; ; attempt++)
+        {
+            Console.Write("New password (16-128 characters; a passphrase of a few words is easiest): ");
+            var password = ReadPassword();
+            string problem;
+            if (password.Length < 16) problem = $"Too short: {password.Length} characters, at least 16 are required.";
+            else if (password.Length > 128) problem = "Too long: at most 128 characters.";
+            else
+            {
+                Console.Write("Repeat password: ");
+                if (password == ReadPassword()) return password;
+                problem = "The two entries were different.";
+            }
+            if (attempt == 3) throw new ArgumentException(problem + " Nothing was saved; run the command again.");
+            Console.WriteLine(problem + " Try again.");
+        }
     }
     private static string ReadPassword()
     {

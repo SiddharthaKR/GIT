@@ -192,6 +192,9 @@ if ! getent passwd git >/dev/null; then adduser --disabled-password --gecos '' -
 # sshd runs the forced PrivateGit gate through the account shell; the gate (ForceCommand)
 # is the only program the git account can ever run over SSH.
 usermod --shell /bin/sh git
+# Reinstalling after uninstall-disable.sh: unlock the git account and drop the parked copy.
+usermod --expiredate '' git
+rm -rf -- /etc/privategit/disabled
 install -d -o gitdash -g gitrepos -m 0700 /var/lib/privategit
 install -d -o root -g gitrepos -m 0750 /srv/privategit
 install -d -o gitdash -g gitrepos -m 2770 /srv/privategit/repositories
@@ -233,7 +236,7 @@ if [[ -d $PACKAGE/templates ]]; then install -d -o root -g root -m 0755 /opt/pri
 # remain readable by the unprivileged gitdash service and helper users.
 find /opt/privategit/wwwroot /opt/privategit/deploy /opt/privategit/templates -type d -exec chmod 0755 {} + 2>/dev/null || true
 find /opt/privategit/wwwroot /opt/privategit/deploy /opt/privategit/templates -type f -exec chmod 0644 {} + 2>/dev/null || true
-for asset in install.sh add-client.sh admin.sh request-certificate.sh README.md SECURITY.md TESTING.md EASY-SETUP.md OFFICE-SETUP.md ARCHITECTURE.md WINDOWS-CLIENT.md PrivateGit.staticwebassets.endpoints.json; do
+for asset in install.sh add-client.sh admin.sh request-certificate.sh uninstall-disable.sh uninstall-remove.sh README.md SECURITY.md TESTING.md EASY-SETUP.md OFFICE-SETUP.md ARCHITECTURE.md WINDOWS-CLIENT.md PrivateGit.staticwebassets.endpoints.json; do
     [[ ! -f $PACKAGE/$asset ]] || install -o root -g root -m 0644 "$PACKAGE/$asset" "/opt/privategit/$asset"
 done
 if [[ $TLS_MODE == 1 ]]; then install -m 0644 /etc/privategit/ca/ca.pem /opt/privategit/privategit-ca.crt; fi

@@ -23,7 +23,7 @@ rm -rf -- "$OUT"; mkdir -p "$OUT"
 
 cp -r "$ROOT/deploy" "$OUT/deploy"
 cp "$ROOT"/{README.md,SECURITY.md,TESTING.md,EASY-SETUP.md,OFFICE-SETUP.md,ARCHITECTURE.md} "$OUT/"
-cp "$ROOT"/{install.sh,add-client.sh,admin.sh,request-certificate.sh} "$OUT/"
+cp "$ROOT"/{install.sh,add-client.sh,admin.sh,request-certificate.sh,uninstall-disable.sh,uninstall-remove.sh} "$OUT/"
 mkdir -p "$OUT/scripts"; cp "$ROOT/scripts/test-ssh-gate.sh" "$OUT/scripts/"
 cp -r "$ROOT/hooks" "$OUT/hooks"
 cp -r "$ROOT/templates" "$OUT/templates"

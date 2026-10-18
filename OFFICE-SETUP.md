@@ -298,3 +298,16 @@ Anyone with access to that NAS share can read the copies, so limit the share to 
 ### Full server backup (recommended in addition)
 
 Back up `/var/lib/privategit` (accounts, TOTP secrets, cookie keys), `/srv/privategit` (repositories, `access/access.json`, hidden backups) and `/etc/privategit` (config, TLS, CA, SSH keys). Stop the dashboard **and** block pushes (or use a filesystem snapshot) while copying. Keep backups encrypted and root-only.
+
+## 12. Turning off or uninstalling
+
+Two scripts, both in `/opt/privategit` (and in the package folder). Each asks you to type a word before changing anything.
+
+| Type | Command | Keeps data? | Undo |
+|---|---|---|---|
+| **Turn off** | `sudo bash /opt/privategit/uninstall-disable.sh` (type `DISABLE`) | Yes: repositories, accounts, keys, backups, settings | `sudo bash /opt/privategit/uninstall-disable.sh --undo` |
+| **Remove completely** | `sudo bash /opt/privategit/uninstall-remove.sh` (type `REMOVE`) | Exported first to `~/privategit-export-<time>.tgz` (root-only) | Reinstall; restore repositories from the export |
+
+- *Turn off* stops the dashboard, removes the PrivateGit nginx site, parks the git account's SSH rules and locks the git account. Nobody can clone or push.
+- *Remove* deletes only what `install.sh` created. `--no-export` skips the export (data is lost).
+- Neither touches your users, your SSH login, other nginx sites, the nginx package, system certificates or NAS copies. If nginx/SSH would not validate afterwards, the change is undone automatically.

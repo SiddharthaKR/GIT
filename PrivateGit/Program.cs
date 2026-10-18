@@ -91,7 +91,12 @@ var accounts = app.Services.GetRequiredService<AccountStore>();
 // Commands are local administrator operations. No public bootstrap/registration endpoint.
 if (args.Length > 0 && AccountCommands.Names.Contains(args[0]))
 {
-    await AccountCommands.Run(accounts, access, args);
+    try { await AccountCommands.Run(accounts, access, args); }
+    catch (Exception error) when (error is ArgumentException or InvalidOperationException)
+    {
+        Console.Error.WriteLine("Error: " + error.Message);
+        Environment.ExitCode = 1;
+    }
     return;
 }
 // Mirror administrator names for the SSH gate, which cannot read account secrets.
